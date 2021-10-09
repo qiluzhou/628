@@ -1,0 +1,79 @@
+---
+title: "stat628_bodyfat"
+author: "Andrew Hu"
+date: "10/9/2021"
+output: html_document
+---
+
+```{r}
+data = read.csv("BodyFat.csv")
+data
+```
+
+```{r}
+colnames(data)
+summary(data)
+```
+
+#correlation between 495/D-450 and B
+```{r}
+cor(data[,2],495/data[,3]-450)
+```
+
+#change weight, height units to kg and cm
+```{r}
+data[,5]=data[,5]*0.45359237
+data[,6] = data[,6]*2.54
+```
+
+#the one with 0 bodyfat
+```{r}
+data[which(data[,2]==0),] #182
+data[which(data[,2]==0),2]=495/data[which(data[,2]==0),3]-450
+data[182,]
+```
+
+#correct the one with 74.93cm height
+```{r}
+which(data[,6]==74.93)#42
+data[42,6]=(data[42,5]/data[42,7])**0.5*100
+```
+
+#regression model and variable selection using vif and backward selection
+```{r}
+library(car)
+fit = lm(BODYFAT~.-DENSITY-IDNO,data = data)
+summary(fit)
+VIF(fit)
+
+fit1 = lm(BODYFAT~.-DENSITY-IDNO-WEIGHT-ADIPOSITY,data = data)
+summary(fit1)
+VIF(fit1)
+
+library(MASS)
+fit2 = stepAIC(fit1,direction = c("backward"))
+summary(fit2)
+plot(fit2)
+
+```
+#lasso regression
+```{r}
+library(glmnet)
+x = model.matrix(BODYFAT~.-IDNO-DENSITY,data)[,-1]
+y = data$BODYFAT
+set.seed(123) 
+cv.lasso <- cv.glmnet(x, y, alpha = 1, family = "gaussian")
+model <- glmnet(x, y, alpha = 1, family = "gaussian",
+                lambda = cv.lasso$lambda.min)
+coef(model)
+fit_lasso = lm(BODYFAT~AGE+HEIGHT+NECK+ABDOMEN+FOREARM+WRIST,data=data)
+summary(fit_lasso)
+```
+
+#model with AGE, HEIGHT and ABDOMEN
+```{r}
+fit0 = lm(BODYFAT~AGE+HEIGHT+ABDOMEN,data = data)
+summary(fit0)
+#predict michael phelps's bodyfat
+predict(fit0,newd = data.frame(AGE=31,HEIGHT=193,ABDOMEN=86.36))
+```
