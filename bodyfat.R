@@ -65,14 +65,13 @@ par(mfrow=c(2,2))
 summary(fit5)
 plot(fit5)
 
-#ridge regression, abdomen, biceps, wrist
-library(MASS)
-ridge.sol <- lm.ridge(data$DENSITY ~ ., lambda = seq(0, 150, length = 151), data = data, 
-                      model = TRUE)
-ridge.sol$lambda[which.min(ridge.sol$GCV)]
+#full model
+fit6=lm(data$DENSITY~data$WEIGHT*data$ABDOMEN*data$AGE*data$HEIGHT)
+summary(fit6)
+plot(fit6)
 
-library(ridge)
-mod <- linearRidge(DENSITY ~ ., data = data)
-summary(mod)
-
-#lasso
+#interaction
+fit7=lm(data$DENSITY~data$WEIGHT+data$ABDOMEN+data$HEIGHT
+        +data$WEIGHT:data$ABDOMEN+data$WEIGHT:data$HEIGHT)
+summary(fit7)
+plot(fit7)
