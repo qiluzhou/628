@@ -8,4 +8,4 @@ We also submit our R shiny app and our report and slides of this project.
 
 
 
-Shiny app link: https://tjia2053.shinyapps.io/bodyfatpredict/
+Shiny app link: http://127.0.0.1:7033/
