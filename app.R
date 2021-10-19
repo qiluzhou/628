@@ -58,7 +58,7 @@ ui <- fluidPage(
             
         ),
 
-        # Show a plot of the body fat ratio!!!!!!!!!!!!
+        # Show a plot of bodyfat and interpret it
         mainPanel(
           
                   plotOutput("bodyfat.plot"),
@@ -161,13 +161,13 @@ server <- function(input, output) {
         }
         
         # Output Text
-        str0 <- paste0("Your percentage of body fat is: ",round(f,1),"%.")
+        str0 <- paste0("Your percentage of body fat is: ",round(f,1),"%,")
         
         if(is.null(bodyfat.level(f))){
-          HTML(paste(h4("Your percentage of body fat is"), h4(round(f,1)),h4("%"),h4("Oops!! Your body fat is abnormally high. Please check your input.")))
+          HTML(paste(h4(str0), h4("Oops!! Your body fat is abnormally high. Please check your input.")))
         } else{
           if(is.na(bodyfat.level(f))){
-            HTML(paste(h4("Your percentage of body fat is"), h4(round(f,1)),h4("%"),h4("wOops!! Your body fat is extremely low. Please check your input.")))
+            HTML(paste(h4(str0), h4("Oops!! Your body fat is extremely low. Please check your input.")))
           } else{
             HTML(paste(h4(str0),h4(bodyfat.level(f))) )
           }
