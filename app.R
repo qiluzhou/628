@@ -18,6 +18,11 @@ ui <- fluidPage(
             
             h5(textOutput("note")),
             
+            radioButtons("gender",
+                         "gender",
+                         choices = c("male","female")
+            ),
+            
             numericInput("weight",
                          h3("Weight"),
                          value = 60
@@ -28,15 +33,16 @@ ui <- fluidPage(
                          choices = c("kg","lb")
                          ),
             
-            numericInput("height",
-                         h3("Height"),
-                         value = 170
-                         ),
+ #           numericInput("gender",
+ #                        h3("gender"),
+ #                        value = 170
+ #                        ),
             
-            radioButtons("unit.ht",
-                         "Unit",
-                         choices = c("cm","inch")
-                         ),
+ #           radioButtons("unit.ht",
+ #                        "Unit",
+ #                        choices = c("cm","inch")
+ #                        ),
+
             
             numericInput("abdomen",
                          h3("Circumference of Abdomen"),
@@ -71,18 +77,20 @@ server <- function(input, output) {
       
       # Correct Unit
       
-      if (input$unit.wt == "lb") weight = input$weight else weight = input$weight*2.20462
+      if (input$unit.wt == "kg") weight = input$weight else weight = input$weight*0.45359237
       
-      if (input$unit.ht == "inch") height = input$height else height = input$height*0.393701
+  #    if (input$unit.ht == "inch") height = input$height else height = input$height*0.393701
       
-      if (input$unit.abd == "cm") abdomen = input$abdomen else abdomen = input$abdomen*2.54
+      if (input$unit.abd == "cm") abdomen = input$abdomen else abdomen = input$abdomen*0.393701
       
       
       # Calculate Body Fat
       
-      d = 1.414e+00-1.297e-03*weight-2.611e-03*abdomen-2.159e-03*height+3.505e-06*weight*abdomen+1.648e-05*weight*height
-      f = 495/d-450
-      
+      if (input$gender == "male"){
+      f=-64.4-0.008*weight+1.14*abdomen-0.003*weight*abdomen
+      }else {
+        f=-9999
+      }
       # Body Fat Level
       bodyfat.level = function(bodyfat){
       
@@ -91,13 +99,15 @@ server <- function(input, output) {
       str3 <- "Your body fat level is 'Fitness', go on and keep your figure!"
       str4 <- "Your body fat level is 'Acceptable', exersice more to keep fit!"
       str5 <- "Your body fat level is 'Obesity', we advice you to keep diet and keep regular exercise to stay in health!"
+
       if (bodyfat <= 2) return(NA) 
       if (2 < bodyfat & bodyfat <= 5) return(str1)
       if (5 < bodyfat & bodyfat <= 13) return(str2)
       if (13 < bodyfat & bodyfat <= 17) return(str3)
       if (17 < bodyfat & bodyfat <= 24) return(str4)
       if (bodyfat > 24 & bodyfat <= 50) return(str5)
-      if (bodyfat > 50) return(NULL)
+      if (bodyfat > 50 & bodyfat <9999) return(NULL)
+      if (bodyfat == 9999) return("Sorry, we only design this for male becuase we only have male data to train our model. Please use another body fat calculator")
       
       }
       
@@ -117,18 +127,20 @@ server <- function(input, output) {
         
         # Correct Unit
         
-        if (input$unit.wt == "lb") weight = input$weight else weight = input$weight*2.20462
+        if (input$unit.wt == "kg") weight = input$weight else weight = input$weight*0.45359237
         
-        if (input$unit.ht == "inch") height = input$height else height = input$height*0.393701
+ #       if (input$unit.ht == "inch") height = input$height else height = input$height*0.393701
         
-        if (input$unit.abd == "cm") abdomen = input$abdomen else abdomen = input$abdomen*2.54
+        if (input$unit.abd == "cm") abdomen = input$abdomen else abdomen = input$abdomen*0.393701
         
         
         # Calculate Body Fat
         
-        d = 1.414e+00-1.297e-03*weight-2.611e-03*abdomen-2.159e-03*height+3.505e-06*weight*abdomen+1.648e-05*weight*height
-        f = 495/d-450
-        
+        if (input$gender == "male"){
+        f=-64.4-0.008*weight+1.14*abdomen-0.003*weight*abdomen
+        }else {
+          f=9999
+        }
         # Body Fat Level
         bodyfat.level = function(bodyfat){
           
@@ -137,24 +149,25 @@ server <- function(input, output) {
           str3 <- "Your body fat level is 'Fitness', go on and keep your figure!"
           str4 <- "Your body fat level is 'Acceptable', exersice more to keep fit!"
           str5 <- "Your body fat level is 'Obesity', we advice you to keep diet and keep regular exercise to stay in health!"
+       
           if (bodyfat <= 2) return(NA) 
           if (2 < bodyfat & bodyfat <= 5) return(str1)
           if (5 < bodyfat & bodyfat <= 13) return(str2)
           if (13 < bodyfat & bodyfat <= 17) return(str3)
           if (17 < bodyfat & bodyfat <= 24) return(str4)
           if (bodyfat > 24 & bodyfat <= 50) return(str5)
-          if (bodyfat > 50) return(NULL)
-          
+          if (bodyfat > 50 & bodyfat <9999) return(NULL)
+          if (bodyfat == 9999) return("Sorry, we only design this for male becuase we only have male data to train our model. Please use another body fat calculator")
         }
         
         # Output Text
         str0 <- paste0("Your percentage of body fat is: ",round(f,1),"%.")
         
         if(is.null(bodyfat.level(f))){
-          HTML(paste(h4("Your percentage of body fat is"), h4(round(f,1)),h4("%, "),h4("which is extremely high. We advice you to check your input.")))
+          HTML(paste(h4("Your percentage of body fat is"), h4(round(f,1)),h4("%"),h4("Oops!! Your body fat is abnormally high. Please check your input.")))
         } else{
           if(is.na(bodyfat.level(f))){
-            HTML(paste(h4("Your percentage of body fat is"), h4(round(f,1)),h4("%, "),h4("which is extremely low. We advice you to check your input.")))
+            HTML(paste(h4("Your percentage of body fat is"), h4(round(f,1)),h4("%"),h4("wOops!! Your body fat is extremely low. Please check your input.")))
           } else{
             HTML(paste(h4(str0),h4(bodyfat.level(f))) )
           }
