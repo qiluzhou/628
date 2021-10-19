@@ -3,7 +3,7 @@ We have two R files that explain the models we tried, and eventually we chose th
 
 We also submit our R shiny app and our report and slides of this project.
 
-628bodyfat is our presentation slides
+628 body fat is our presentation slides
 
 628_module2_summary is our report
 
